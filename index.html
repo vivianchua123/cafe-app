@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Café Bill Calculator</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .item-info {
+      flex: 1;
+    }
+
+    .item-name {
+      font-weight: bold;
+    }
+
+    .price {
+      color: #666;
+      font-size: 14px;
+      margin-top: 3px;
+    }
+
+    input[type="number"] {
+      width: 65px;
+      padding: 7px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 25px;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      background: #333;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #555;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f7f7f7;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Café Bill Calculator</h1>
+
+    <div class="item">
+      <div class="item-info">
+        <div class="item-name">Chicken Rice</div>
+        <div class="price">$4.50</div>
+      </div>
+      <input type="number" id="chickenRice" min="0" value="0">
+    </div>
+
+    <div class="item">
+      <div class="item-info">
+        <div class="item-name">Nasi Lemak</div>
+        <div class="price">$4.00</div>
+      </div>
+      <input type="number" id="nasiLemak" min="0" value="0">
+    </div>
+
+    <div class="item">
+      <div class="item-info">
+        <div class="item-name">Laksa</div>
+        <div class="price">$5.00</div>
+      </div>
+      <input type="number" id="laksa" min="0" value="0">
+    </div>
+
+    <div class="item">
+      <div class="item-info">
+        <div class="item-name">Kopi</div>
+        <div class="price">$1.50</div>
+      </div>
+      <input type="number" id="kopi" min="0" value="0">
+    </div>
+
+    <div class="item">
+      <div class="item-info">
+        <div class="item-name">Teh</div>
+        <div class="price">$1.30</div>
+      </div>
+      <input type="number" id="teh" min="0" value="0">
+    </div>
+
+    <div class="item">
+      <div class="item-info">
+        <div class="item-name">Milo</div>
+        <div class="price">$2.00</div>
+      </div>
+      <input type="number" id="milo" min="0" value="0">
+    </div>
+
+    <button onclick="calculateBill()">Calculate Bill</button>
+
+    <div id="result">
+      Total: $0.00
+    </div>
+  </div>
+
+  <script>
+    function getQuantity(id) {
+      const quantity = parseInt(document.getElementById(id).value, 10);
+      return Number.isFinite(quantity) && quantity > 0 ? quantity : 0;
+    }
+
+    function calculateBill() {
+      const total =
+        getQuantity("chickenRice") * 4.50 +
+        getQuantity("nasiLemak") * 4.00 +
+        getQuantity("laksa") * 5.00 +
+        getQuantity("kopi") * 1.50 +
+        getQuantity("teh") * 1.30 +
+        getQuantity("milo") * 2.00;
+
+      document.getElementById("result").textContent =
+        "Total: $" + total.toFixed(2);
+    }
+  </script>
+
+</body>
+</html>
