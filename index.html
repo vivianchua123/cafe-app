@@ -73,6 +73,11 @@
       background: #555;
     }
 
+    button:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+
     #result {
       margin-top: 20px;
       padding: 15px;
@@ -82,6 +87,16 @@
       font-size: 20px;
       font-weight: bold;
     }
+
+    #status {
+      text-align: center;
+      color: #666;
+      padding: 15px 0;
+    }
+
+    .error {
+      color: #b00020;
+    }
   </style>
 </head>
 
@@ -90,55 +105,12 @@
   <div class="container">
     <h1>Café Bill Calculator</h1>
 
-    <div class="item">
-      <div class="item-info">
-        <div class="item-name">Chicken Rice</div>
-        <div class="price">$4.50</div>
-      </div>
-      <input type="number" id="chickenRice" min="0" value="0">
-    </div>
+    <div id="status">Loading menu...</div>
+    <div id="menu"></div>
 
-    <div class="item">
-      <div class="item-info">
-        <div class="item-name">Nasi Lemak</div>
-        <div class="price">$4.00</div>
-      </div>
-      <input type="number" id="nasiLemak" min="0" value="0">
-    </div>
-
-    <div class="item">
-      <div class="item-info">
-        <div class="item-name">Laksa</div>
-        <div class="price">$5.00</div>
-      </div>
-      <input type="number" id="laksa" min="0" value="0">
-    </div>
-
-    <div class="item">
-      <div class="item-info">
-        <div class="item-name">Kopi</div>
-        <div class="price">$1.50</div>
-      </div>
-      <input type="number" id="kopi" min="0" value="0">
-    </div>
-
-    <div class="item">
-      <div class="item-info">
-        <div class="item-name">Teh</div>
-        <div class="price">$1.30</div>
-      </div>
-      <input type="number" id="teh" min="0" value="0">
-    </div>
-
-    <div class="item">
-      <div class="item-info">
-        <div class="item-name">Milo</div>
-        <div class="price">$2.00</div>
-      </div>
-      <input type="number" id="milo" min="0" value="0">
-    </div>
-
-    <button onclick="calculateBill()">Calculate Bill</button>
+    <button id="calculateButton" onclick="calculateBill()" disabled>
+      Calculate Bill
+    </button>
 
     <div id="result">
       Total: $0.00
@@ -146,23 +118,105 @@
   </div>
 
   <script>
-    function getQuantity(id) {
-      const quantity = parseInt(document.getElementById(id).value, 10);
-      return Number.isFinite(quantity) && quantity > 0 ? quantity : 0;
+    let menuItems = [];
+
+    async function loadMenu() {
+      const status = document.getElementById("status");
+      const menuContainer = document.getElementById("menu");
+      const calculateButton = document.getElementById("calculateButton");
+
+      try {
+        const response = await fetch("menu.csv");
+
+        if (!response.ok) {
+          throw new Error("Could not load menu.csv");
+        }
+
+        const csvText = await response.text();
+        const lines = csvText.trim().split(/\r?\n/);
+
+        // Remove the header row.
+        const dataLines = lines.slice(1);
+
+        menuItems = dataLines
+          .map(line => {
+            const [name, price] = line.split(",");
+
+            return {
+              name: name.trim(),
+              price: parseFloat(price)
+            };
+          })
+          .filter(item =>
+            item.name &&
+            Number.isFinite(item.price)
+          );
+
+        if (menuItems.length === 0) {
+          throw new Error("No valid menu items found.");
+        }
+
+        menuContainer.innerHTML = "";
+
+        menuItems.forEach((item, index) => {
+          const itemElement = document.createElement("div");
+          itemElement.className = "item";
+
+          itemElement.innerHTML = `
+            <div class="item-info">
+              <div class="item-name">${escapeHtml(item.name)}</div>
+              <div class="price">$${item.price.toFixed(2)}</div>
+            </div>
+
+            <input
+              type="number"
+              id="quantity-${index}"
+              min="0"
+              step="1"
+              value="0"
+              aria-label="Quantity for ${escapeHtml(item.name)}"
+            >
+          `;
+
+          menuContainer.appendChild(itemElement);
+        });
+
+        status.style.display = "none";
+        calculateButton.disabled = false;
+
+      } catch (error) {
+        status.textContent = "Unable to load the menu.";
+        status.className = "error";
+        console.error(error);
+      }
     }
 
     function calculateBill() {
-      const total =
-        getQuantity("chickenRice") * 4.50 +
-        getQuantity("nasiLemak") * 4.00 +
-        getQuantity("laksa") * 5.00 +
-        getQuantity("kopi") * 1.50 +
-        getQuantity("teh") * 1.30 +
-        getQuantity("milo") * 2.00;
+      let total = 0;
+
+      menuItems.forEach((item, index) => {
+        const input = document.getElementById(`quantity-${index}`);
+        const quantity = parseInt(input.value, 10);
+
+        const validQuantity =
+          Number.isFinite(quantity) && quantity > 0
+            ? quantity
+            : 0;
+
+        total += validQuantity * item.price;
+      });
 
       document.getElementById("result").textContent =
         "Total: $" + total.toFixed(2);
     }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    loadMenu();
   </script>
 
 </body>
